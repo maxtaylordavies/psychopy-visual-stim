@@ -1,0 +1,5 @@
+frame: width 620mm height 370mm
+screen: width 597.7mm height 336.2mm
+pixel 1920x1080
+
+center of monitor is 20deg or 112mm higher than the camera

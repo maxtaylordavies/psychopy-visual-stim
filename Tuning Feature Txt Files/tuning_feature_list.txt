@@ -1,0 +1,6 @@
+ori
+spat
+temp_lin
+temp_osc
+cont
+loc
