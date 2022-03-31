@@ -1,6 +1,6 @@
 from psychopy import visual
 from psychopy import event
-from screeninfo import get_monitors
+# from screeninfo import get_monitors
 from init_para import *
 import socket
 import numpy as np
@@ -23,9 +23,8 @@ Local_Port = 9093
 
 
 # Monitor Patameters
-m = get_monitors()[0]
-winWidth = m.width  # refers to width in pixels
-winHeight = m.height  # refers to height in pixels
+winWidth = 1440  # refers to width in pixels
+winHeight = 900  # refers to height in pixels
 
 ScrnNum = 3
 DisplayFrameWidth = 532.0
@@ -109,7 +108,7 @@ def text2list(fileName):
     Convert text file to list. One item per line. 
     """
     with open(
-        os.path.dirname(__file__) + "\\" + fileName + ".txt"
+        os.path.join(os.path.dirname(__file__), f"{fileName}.txt")
     ) as f:  # modified>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         list = f.read().split("\n")
     list = list[:-1]  # remove empty element ' ' that is accidently created
