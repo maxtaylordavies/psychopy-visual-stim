@@ -15,6 +15,26 @@ import crossline
 
 
 def front():
+    global drumgrating_tempFreqVal
+    global drumgrating_SpatFreqVal
+    global drumgrating_t_beforeVal
+    global drumgrating_t_DuringVal
+    global drumgrating_t_afterVal
+    global drumgrating_syncVal
+    global drumgrating_Motionmode
+    global MovSinGrat_Motionmode
+    global MovSinGrat_SpatFreqVal
+    global MovSinGrat_tempFreqVal
+    global MovSinGrat_t_beforeVal
+    global MovSinGrat_t_stimVal
+    global MovSinGrat_t_afterVal
+    global MovSinGrat_contrast
+    global MovSinGrat_ori
+    global MovSinGrat_syncVal
+    global MovSinGrat_ledstate
+    global MovSinGrat_features
+    global MovSinGrat_Rep
+    global calibration_syncVal
     # CREATING TEXTBOXES
 
     # DRUMGRATING
