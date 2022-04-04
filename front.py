@@ -753,14 +753,22 @@ def front():
             event.getKeys()
         )  # this will retrieve key presses from the buffer and place them into a list (in the order that they were pressed)
 
-        if (mouse.isPressedIn(mvnSinGrdnt) and currMouse[0] == 1) or (
+        # finish if user has pressed esc
+        if "escape" in keys: break
+
+        # check if user is clicking inside the "mvnSinGrdnt" button or pressing the drumgrating hotkey
+        if (mouse.isPressedIn(mvnSinGrdnt) and currMouse[0]) or (
             keys and keys[0] == drumgrating_hotkey
-        ):  # modified >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ):
+            print("LINE 760")
+
             square1.fillColor = [-1, -1, -1]
             square2.fillColor = [-1, -1, -1]
             square1.draw()
             square2.draw()
+
             win.flip()
+
             drumgrating.drumgrating(
                 win,
                 drumgrating_SpatFreqVal,
@@ -1050,13 +1058,10 @@ def front():
             square1.draw()
             square2.draw()
             crossline.crossline()
-            win.flip()
-
-        elif keys:
-            if keys[0] == "escape":
-                break
+            win.flip()            
 
         # these functions are to draw all the buttons and textboxes
+        # MAX: WHY ARE WE REDRAWING THE TEXTBOXES HERE? (BUT NOT THE BUTTONS?)
         if sum(currMouse) > 0 or keys:
             t_after_Obj.draw()
             t_stim_Obj.draw()

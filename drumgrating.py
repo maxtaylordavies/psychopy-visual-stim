@@ -1,10 +1,18 @@
+import socket
+import numpy as np
+import conv
+from psychopy import visual
+from psychopy import event
+from psychopy import clock
+
+
+def checkForEsc():
+    return "escape" in event.getKeys()
+
+
 def drumgrating(
     win, SpatFreqDeg, TempFreq, t_before, t_During, t_after, Synch, Motionmode
 ):  # any paramter potentially changed by user in front.py
-
-    from psychopy import visual
-    from psychopy import event
-    from psychopy import clock
 
     from init_para import (
         drumgrating_addblank,
@@ -36,9 +44,8 @@ def drumgrating(
         Remote_Port,
     )
 
-    import socket
-    import numpy as np
-    import conv
+    if drumgrating_Ori != 1:
+        return
 
     print(FR)
 
@@ -159,43 +166,6 @@ def drumgrating(
         elif drumgrating_controlmod == "manualVS":
             return
 
-    # if Synch is False, this else condition will make the parameters in the same format as if Synch was True
-    else:
-
-        # making the array in which the parameters will be added to
-        paras = np.empty(shape=[drumgrating_parasize, 10])
-        ver_loc = 0
-        # adding the parameters to the array
-        for i in range(drumgrating_parasize):  # start from 0 to parasize[0] - 1
-
-            # adding the parameters as an array at index i
-            paras[i, :] = [
-                SpatFreqDeg,
-                TempFreq,
-                drumgrating_contrast,
-                drumgrating_MeanLum,
-                drumgrating_dirindex,
-                t_before,
-                t_During,
-                t_after,
-                drumgrating_t_triginit,
-                ver_loc,
-            ]
-
-        paratemp = [
-            drumgrating_Ori,
-            Motionmode,
-            drumgrating_Amp_sinu,
-            drumgrating_addblank,
-        ]
-
-        # setting up the parameters based on what was send in the paras variable
-        drumgrating_Ori = int(paratemp[0])
-        Motionmode = int(paratemp[1])
-        drumgrating_Amp_sinu = paratemp[2]
-        drumgrating_addblank = paratemp[3]
-
-    if Synch:
         # get file name $$$$$$$$$$$$$$$$$$$$
         while True:
             try:
@@ -222,36 +192,67 @@ def drumgrating(
             if mouse.getPressed()[1]:
                 sock.close()
                 return
+    else:  # if Synch is False, this else condition will make the parameters in the same format as if Synch was True
+        # making the array in which the parameters will be added to
+        paras, ver_loc = np.empty(shape=[drumgrating_parasize, 10]), 0
+
+        # adding the parameters to the array
+        for i in range(drumgrating_parasize):  # start from 0 to parasize[0] - 1
+            paras[i, :] = [
+                SpatFreqDeg,
+                TempFreq,
+                drumgrating_contrast,
+                drumgrating_MeanLum,
+                drumgrating_dirindex,
+                t_before,
+                t_During,
+                t_after,
+                drumgrating_t_triginit,
+                ver_loc,
+            ]
+
+        # paratemp = [
+        #     drumgrating_Ori,
+        #     Motionmode,
+        #     drumgrating_Amp_sinu,
+        #     drumgrating_addblank,
+        # ]
+
+        # # setting up the parameters based on what was send in the paras variable
+        # drumgrating_Ori = int(paratemp[0])
+        # Motionmode = int(paratemp[1])
+        # drumgrating_Amp_sinu = paratemp[2]
+        # drumgrating_addblank = paratemp[3]
+
+        drumgrating_Ori = int(drumgrating_Ori)
+        Motionmode = int(Motionmode)
 
     # generating the pixel angles relaive to the mouse position based on the orientation of the stimulus
-    if drumgrating_Ori == 1:
-
-        # generating matrix that will be the place holder for every pixel
-        pixelangle = np.empty(
-            shape=[1, winWidth]
-        )  # pixel has to be 2D since the image is 2D
-        temp = np.array(range(winWidthofEachDisp))
-        temp.reshape(1, winWidthofEachDisp)  # the temp must be 2D
-        tempPixelAngle = (
-            np.degrees(
-                np.arctan(
-                    (temp - (winWidthofEachDisp / 2.0))
-                    * PixelSize
-                    * (2.0 / DisplayFrameWidth)
-                )
+    # generating matrix that will be the place holder for every pixel
+    pixelangle = np.empty(
+        shape=[1, winWidth]
+    )  # pixel has to be 2D since the image is 2D
+    temp = np.array(range(winWidthofEachDisp))
+    temp.reshape(1, winWidthofEachDisp)  # the temp must be 2D
+    tempPixelAngle = (
+        np.degrees(
+            np.arctan(
+                (temp - (winWidthofEachDisp / 2.0))
+                * PixelSize
+                * (2.0 / DisplayFrameWidth)
             )
-            + 45
-        )  # calculating the pixel angle for first monitor
+        )
+        + 45
+    )  # calculating the pixel angle for first monitor
 
-        for i in range(ScrnNum):
-            pixelangle[:, i * winWidthofEachDisp : (i + 1) * winWidthofEachDisp] = (
-                tempPixelAngle + 90 * i
-            )  # taking specific ranges within the full winWidth and replacing the values with the corresponding angles
-
-    else:
-        return
+    for i in range(ScrnNum):
+        pixelangle[:, i * winWidthofEachDisp : (i + 1) * winWidthofEachDisp] = (
+            tempPixelAngle + 90 * i
+        )  # taking specific ranges within the full winWidth and replacing the values with the corresponding angles
 
     for m in range(drumgrating_parasize):
+        if checkForEsc():
+            return
 
         tic = clock.getTime()
 
@@ -281,52 +282,38 @@ def drumgrating(
             frames = round(FR / TempFreq)
 
             phase = np.array(range(int(frames)))
-
-            if Motionmode == 1:
-                phase = (phase / float(round(frames))) * (2.0 * np.pi)
-
-            elif Motionmode == 0:
-                phase = (
+            phase = (
+                (phase / float(round(frames))) * (2.0 * np.pi)
+                if Motionmode == 1
+                else (
                     drumgrating_Amp_sinu
                     * np.sin((phase / frames) * 2 * np.pi)
                     * SpatFreqDeg
                     * 2
                     * np.pi
                 )
+            )
 
-            # generating the pixel values for the stimulus depending on the orientation of the stimulus
-            if drumgrating_Ori == 1:
-
-                # creating the list that will hold all frames
-                texdata1D = []
-
-                # generating the pixel values for vertical stimulus
-                for i in range(int(frames)):
-                    texdata1DTmp = np.exp(
-                        np.log(
-                            (
-                                drumgrating_gray
-                                + inc
-                                * np.sin(
-                                    pixelangle * SpatFreqDeg * 2 * np.pi + phase[i]
-                                )
-                            )
-                            / AmpFactor
+            # generating the pixel values for the stimulus
+            texdata1D = []  # list that will hold all frames
+            for i in range(int(frames)):
+                texdata1DTmp = np.exp(
+                    np.log(
+                        (
+                            drumgrating_gray
+                            + inc
+                            * np.sin(pixelangle * SpatFreqDeg * 2 * np.pi + phase[i])
                         )
-                        / GammaFactor
+                        / AmpFactor
                     )
-                    pixVal = (
-                        2 * (texdata1DTmp / 255) - 1
-                    )  # converting the pixel values from 0:255 to -1:1
-                    texdata1D.append(pixVal)
-
-            else:
-                return
-
+                    / GammaFactor
+                )
+                pixVal = (
+                    2 * (texdata1DTmp / 255) - 1
+                )  # converting the pixel values from 0:255 to -1:1
+                texdata1D.append(pixVal)
         else:
             if sum(abs(paras[m, :] - paras[m - 1, :])) > 1e-7:
-                # if (not all([v == 0  for v in abs(paras[m, :] - paras[m-1, :])])):
-
                 SpatFreqDeg = paras[m, 0]
                 TempFreq = paras[m, 1]
                 drumgrating_contrast = paras[m, 2]
@@ -394,14 +381,14 @@ def drumgrating(
             else:
                 return
 
-        # creating the looping variable for the simulation depending on the value of drumgrating_addblank
-        if drumgrating_addblank == 0 or drumgrating_addblank == 1:
-            # this variable controls the looping and frame that is to be displayed
-            frmNum = 0  # frame number within one cycle
-
-        elif drumgrating_addblank == 2 and m == 0:
-            # this variable controls the looping and frame that is to be displayed
-            frmNum = 0  # frame number within one cycle
+        # # creating the looping variable for the simulation depending on the value of drumgrating_addblank
+        # if drumgrating_addblank == 0 or drumgrating_addblank == 1:
+        #     # this variable controls the looping and frame that is to be displayed
+        #     frmNum = 0  # frame number within one cycle
+        # elif drumgrating_addblank == 2 and m == 0:
+        #     # this variable controls the looping and frame that is to be displayed
+        #     frmNum = 0  # frame number within one cycle
+        frmNum = 0
 
         # setting up the grating
         DrawTexture = visual.GratingStim(
@@ -409,7 +396,6 @@ def drumgrating(
         )
 
         if Synch:
-
             # waiting for "TRLstart", if TRLstart is sent this loop will send "TRLstart m" then break
             sock.settimeout(0.5)
             comm = [""]
@@ -422,91 +408,64 @@ def drumgrating(
                 if comm[0] == "TRLstart":
                     sock.sendto(("TRLstart " + str(m + 1)), (Remote_IP, Remote_Port))
                     break
-
-                elif comm[0] == "ESC1":  # if 'ESC1' is in the buffer, return to front
+                elif (
+                    comm[0] == "ESC1" or mouse.getPressed()[1]
+                ):  # if 'ESC1' is in the buffer, return to front
                     sock.close()
-                    return
-
-                if mouse.getPressed()[1]:
-                    sock.close()
-                    print("Exit at ESC1")
                     return
 
         if drumgrating_addblank == 1.0:
-            win.color = pixelformeanlum
-
+            win.color = pixelformeanlum  # draw blank gray screen
         elif drumgrating_addblank == 0.0:
-            DrawTexture.draw()
-
+            DrawTexture.draw()  # draw first stimulus frame
         elif drumgrating_addblank == 2.0:
             DrawTexture.tex = texdata1D[frmNum]
             DrawTexture.draw()
-            frmNum = frmNum + 1
-
-            if frmNum >= len(texdata1D):
-                frmNum = 0
+            frmNum = (frmNum + 1) % len(texdata1D)
 
         square1.draw()
         square2.draw()
         win.flip()
 
-        # time before the stimulation
+        # PRE-STIMULATION LOOP
         toc = clock.getTime() - tic
-
         while toc < (t_before / 1000.0):
-
-            toc = clock.getTime() - tic
-
             if drumgrating_addblank == 2:
-
                 # assigning the texture using the corrusponding frame
                 DrawTexture.tex = texdata1D[frmNum]
                 # this if statement is for existing the stimulation
-                if mouse.getPressed()[1]:
-
+                if checkForEsc() or mouse.getPressed()[1]:
                     if Synch:
                         sock.close()
                     return
-
-                frmNum = frmNum + 1
-
-                if frmNum >= len(texdata1D):
-                    frmNum = 0
-
+                frmNum = (frmNum + 1) % len(texdata1D)
                 DrawTexture.draw()
                 square1.draw()
                 square2.draw()
                 win.flip()
+
+            toc = clock.getTime() - tic
 
         # t_triger initial timing for triggerin the camera
         for i in range(int(FR * drumgrating_t_triginit / 1000.0)):
             if i < 3:
                 square1.fillColor = [1, 1, 1]
                 square2.fillColor = [-1, -1, -1]
-
             else:
                 square1.fillColor = [-1, -1, -1]
                 square2.fillColor = [-1, -1, -1]
 
             if drumgrating_addblank == 1.0:
                 win.color = pixelformeanlum
-
             elif drumgrating_addblank == 0.0:
                 DrawTexture.draw()
-
             elif drumgrating_addblank == 2.0:
-
                 # assigning the texture using the corrusponding frame
                 DrawTexture.tex = texdata1D[frmNum]
-
-                frmNum = frmNum + 1
-
-                if frmNum >= len(texdata1D):
-                    frmNum = 0
-
                 DrawTexture.draw()
+                frmNum = (frmNum + 1) % len(texdata1D)
 
-            if mouse.getPressed()[1]:
+            if checkForEsc() or mouse.getPressed()[1]:
                 if Synch:
                     sock.close()
                 return
@@ -519,27 +478,25 @@ def drumgrating(
         square1.fillColor = [-1, -1, -1]
         square2.fillColor = [1, 1, 1]
 
-        # drawing the frames on the window
-        for frm in range(int(FR * t_During / 1000.0)):
-
+        # STIMULATION LOOP
+        for _ in range(int(FR * t_During / 1000.0)):
             # assigning the texture using the corrusponding frame
             DrawTexture.tex = texdata1D[frmNum]
-            # this if statement is for existing the stimulation
-            if mouse.getPressed()[1]:
 
+            # check if we need to exit
+            if checkForEsc() or mouse.getPressed()[1]:
                 if Synch:
                     sock.close()
                 return
 
-            frmNum = frmNum + 1
-
-            if frmNum >= len(texdata1D):
-                frmNum = 0
-
+            # draw the new frame
             DrawTexture.draw()
             square1.draw()
             square2.draw()
             win.flip()
+
+            # increment the frame counter
+            frmNum = (frmNum + 1) % len(texdata1D)
 
         if Synch:
             sock.sendto(("TRLdone " + str(m + 1)), (Remote_IP, Remote_Port))
@@ -548,8 +505,10 @@ def drumgrating(
         square1.fillColor = [-1, -1, -1]
         square2.fillColor = [-1, -1, -1]
 
-        # time after the stimulation
+        # POST-STIMULATION LOOP
         for toc in range(int(t_after * FR / 1000.0)):
+            if checkForEsc():
+                return
 
             if drumgrating_addblank == 1.0:
                 win.color = pixelformeanlum
@@ -558,25 +517,18 @@ def drumgrating(
                 DrawTexture.draw()
 
             elif drumgrating_addblank == 2:
-
                 # assigning the texture using the corrusponding frame
                 DrawTexture.tex = texdata1D[frmNum]
-                frmNum = frmNum + 1
-
-                if frmNum >= len(texdata1D):
-                    frmNum = 0
-
                 DrawTexture.draw()
+                frmNum = (frmNum + 1) % len(texdata1D)
 
             square1.draw()
             square2.draw()
             win.flip()
 
         if Synch:
-
             # checking for stop button
             while True:
-
                 try:
                     comm = sock.recvfrom(1024)
                 except:
@@ -585,10 +537,8 @@ def drumgrating(
                 if comm[0] == "ESC1":
                     sock.close()
                     return
-
                 elif comm[0] == "ESC0":
                     break
-
                 elif mouse.getPressed()[1]:
                     sock.close()
                     print("Exit at ESC2")

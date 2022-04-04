@@ -1,5 +1,6 @@
 from psychopy import visual
 from psychopy import event
+
 # from screeninfo import get_monitors
 from init_para import *
 import socket
@@ -67,12 +68,12 @@ directionalGrating_rotate = 1  # if 0 then the barrel will appear to rotate cloc
 
 
 # drumgrating parameters that cannot be changed from front.py
-drumgrating_addblank = 0  # if 1 a blank screen will appear during t_before and t_after, if 0 the first and last frame will appear for t_before and t_after respectively; if 2, continue the motion
+drumgrating_addblank = 1  # if 1 a blank screen will appear during t_before and t_after, if 0 the first and last frame will appear for t_before and t_after respectively; if 2, continue the motion
 drumgrating_Amp_sinu = 5  # amplitude of the gradient movement for motionmode = 0
 drumgrating_controlmod = "autoVS"
 drumgrating_dirindex = 0  # this is the direction of movement for motionmode = 1 (note: this has not been implemented yet)
-drumgrating_Ori = 1
-drumgrating_parasize = 800  # number of repeats the stimulation will undergo
+drumgrating_Ori = 1  # orientation
+drumgrating_parasize = 1  # number of repeats the stimulation will undergo
 drumgrating_t_triginit = 1000
 drumgrating_contrast = 1
 drumgrating_MeanLum = 35
@@ -86,7 +87,7 @@ drumgrating_tempFreqVal = 0.4
 drumgrating_t_beforeVal = 1000
 drumgrating_t_DuringVal = 2280000
 drumgrating_t_afterVal = 4000
-drumgrating_syncVal = True  # change NAME
+drumgrating_syncVal = False  # change NAME
 
 
 # MovSinGrat parameters that cannot be changed from front.py
